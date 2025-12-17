@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-//using MyAuthAPI.Data;
-//using MyAuthAPI.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -52,4 +50,4 @@ namespace MiniProject.Controllers
     }
 }
 
-public record RegisterDto(string Email, string Password, string UserName, string PhoneNumber);
+public record RegisterDto(string UserName, string PhoneNumber, string Email, string Password);
