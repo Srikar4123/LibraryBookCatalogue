@@ -47,7 +47,69 @@ namespace MiniProject.Controllers
 
             return Ok(new { message = "User registered successfully" });
         }
+
+        [HttpPost("login")]
+
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        {
+            if (dto == null)
+                return BadRequest("Invalid login data.");
+
+            // Find user by username
+            var user = await _db.UserRegistration
+                                .FirstOrDefaultAsync(u => u.userName == dto.UserName);
+
+            if (user == null)
+                return Unauthorized("Invalid username or password.");
+
+            // Verify password
+            var result = _hasher.VerifyHashedPassword(user, user.password, dto.Password);
+
+            if (result == PasswordVerificationResult.Failed)
+                return Unauthorized("Invalid username or password.");
+
+            return Ok(new
+            {
+                message = "Login successful",
+                //UserName = user.userName,
+                //email = user.email
+            });
+        }
+
+
+        private string GenerateJwt(UserRegistration user)
+        {
+            var jwt = _config.GetSection("Jwt");
+
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwt["Key"]!)
+            );
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.userName),
+                new Claim(JwtRegisteredClaimNames.Sub, user.userName),
+                new Claim(JwtRegisteredClaimNames.Email, user.email)
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: jwt["Issuer"],
+                audience: jwt["Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(
+                    double.Parse(jwt["ExpiresMinutes"] ?? "60")
+                ),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
     }
 }
 
 public record RegisterDto(string UserName, string PhoneNumber, string Email, string Password);
+public record LoginDto(string UserName,string Password);
