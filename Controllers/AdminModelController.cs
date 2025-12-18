@@ -28,7 +28,7 @@ namespace MiniProject.Controllers
             _config = config;
         }
 
-        [HttpPost("admin-register")]
+        [HttpPost("admin-reg")]
         public async Task<IActionResult> RegisterAdmin([FromBody] RegisterAdminDto dto)
         {
             if (dto == null) return BadRequest("Invalid data.");
@@ -56,7 +56,7 @@ namespace MiniProject.Controllers
             return Ok(new { message = "Admin registered successfully" });
         }
 
-        [HttpPost("admin-login")]
+        [HttpPost("admin-log")]
         public async Task<IActionResult> Login([FromBody] LoginAdminDto dto)
         {
             if (dto == null)
