@@ -15,68 +15,66 @@ namespace MiniProject.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserRegistrationController : ControllerBase
+    public class AdminModelController : ControllerBase
     {
-        private readonly AppDbContext _db;
-        private readonly IPasswordHasher<UserRegistration> _hasher;
+        private readonly AppDbContextAdmin _db;
+        private readonly IPasswordHasher<AdminModel> _hasher;
         private readonly IConfiguration _config;
 
-        public UserRegistrationController(AppDbContext db, IPasswordHasher<UserRegistration> hasher, IConfiguration config)
+        public AdminModelController(AppDbContextAdmin db, IPasswordHasher<AdminModel> hasher, IConfiguration config)
         {
             _db = db;
             _hasher = hasher;
             _config = config;
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+        [HttpPost("admin-reg")]
+        public async Task<IActionResult> RegisterAdmin([FromBody] RegisterAdminDto dto)
         {
             if (dto == null) return BadRequest("Invalid data.");
 
-            if (await _db.UserRegistration.AnyAsync(u => u.email == dto.Email))
+            if (await _db.AdminModel.AnyAsync(u => u.email == dto.Email))
                 return BadRequest("Email already exists.");
 
-            if (await _db.UserRegistration.AnyAsync(u => u.phoneNumber == dto.PhoneNumber))
+            if (await _db.AdminModel.AnyAsync(u => u.phoneNumber == dto.PhoneNumber))
                 return BadRequest("Phone number already exists.");
 
             if (dto.Password != dto.ConfirmPassword) return BadRequest("The password doesn't match");
 
-            var user = new UserRegistration
+            var admin = new AdminModel
             {
                 userName = dto.UserName,
                 email = dto.Email,
                 phoneNumber = dto.PhoneNumber
             };
 
-            user.password = _hasher.HashPassword(user, dto.Password);
+            admin.password = _hasher.HashPassword(admin, dto.Password);
 
-            _db.UserRegistration.Add(user);
+            _db.AdminModel.Add(admin);
             await _db.SaveChangesAsync();
 
-            return Ok(new { message = "User registered successfully" });
+            return Ok(new { message = "Admin registered successfully" });
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        [HttpPost("admin-log")]
+        public async Task<IActionResult> Login([FromBody] LoginAdminDto dto)
         {
             if (dto == null)
                 return BadRequest("Invalid login data.");
 
             // Find user by username
-            var user = await _db.UserRegistration.FirstOrDefaultAsync(u => u.userName == dto.UserName);
-            if (user == null)
+            var admin = await _db.AdminModel.FirstOrDefaultAsync(u => u.userName == dto.UserName);
+            if (admin == null)
                 return Unauthorized("Invalid username or password.");
 
             // Verify password
-            var result = _hasher.VerifyHashedPassword(user, user.password, dto.Password);
+            var result = _hasher.VerifyHashedPassword(admin, admin.password, dto.Password);
 
             if (result == PasswordVerificationResult.Failed)
                 return Unauthorized("Invalid username or password.");
             return Ok(new
             {
-                message = "Login successful",
-                //userName = user.userName, 
-                //email = user.email });
+                message = "Login successful"
             });
         }
 
@@ -110,8 +108,8 @@ namespace MiniProject.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        }
+    }
 }
 
-public record RegisterDto(string UserName, string PhoneNumber, string Email, string Password, string ConfirmPassword);
-public record LoginDto(string UserName, string Password);
+public record RegisterAdminDto(string UserName, string PhoneNumber, string Email, string Password, string ConfirmPassword);
+public record LoginAdminDto(string UserName, string Password);
