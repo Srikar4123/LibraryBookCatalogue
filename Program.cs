@@ -12,8 +12,8 @@ var configuration = builder.Configuration;
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddDbContext<AppDbContextAdmin>(options =>
-    options.UseSqlServer(configuration.GetConnectionString("AdminConnection")));
+//builder.Services.AddDbContext<AppDbContextAdmin>(options =>
+  //  options.UseSqlServer(configuration.GetConnectionString("AdminConnection")));
 
 builder.Services.AddDbContext<AppDbContextUser>(options =>
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
