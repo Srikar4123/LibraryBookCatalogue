@@ -26,6 +26,9 @@ builder.Services.AddDbContext<AppDbContextAdmin>(options =>
 builder.Services.AddDbContext<AppDbContextUser>(options =>
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddDbContext<FinesAppDbContext>(options =>
+    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
 // Controllers & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
